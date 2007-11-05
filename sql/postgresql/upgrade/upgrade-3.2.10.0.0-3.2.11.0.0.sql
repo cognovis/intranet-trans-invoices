@@ -8,7 +8,26 @@ add        file_type_id            integer
 ;
 
 -- Create a new index to incorporate file_type
-drop index im_trans_price_idx;
+
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+        v_count                 integer;
+BEGIN
+        select count(*) into v_count
+        from user_tab_columns
+        where   lower(table_name) = ''im_trans_price_idx'';
+        IF v_count = 0 THEN return 0; END IF;
+
+	drop index im_trans_price_idx;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
 
 -- make sure the same price doesn't get defined twice
 create unique index im_trans_price_idx on im_trans_prices (
