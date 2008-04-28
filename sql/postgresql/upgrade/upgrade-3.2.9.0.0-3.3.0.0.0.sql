@@ -1,10 +1,10 @@
--- upgrade-3.2.10.0.0-3.2.11.0.0.sql
+-- upgrade-3.2.9.0.0-3.3.0.0.0.sql
 
 
 alter table im_trans_prices
-add        file_type_id            integer
-                                constraint im_trans_prices_file_type_fk
-                                references im_categories
+add file_type_id		integer
+				constraint im_trans_prices_file_type_fk
+				references im_categories
 ;
 
 -- Create a new index to incorporate file_type
@@ -12,16 +12,15 @@ add        file_type_id            integer
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
-        v_count                 integer;
+	v_count		integer;
 BEGIN
-        select count(*) into v_count
-        from user_tab_columns
-        where   lower(table_name) = ''im_trans_price_idx'';
-        IF v_count = 0 THEN return 0; END IF;
+	select	count(*) into v_count from user_tab_columns
+	where	lower(table_name) = ''im_trans_price_idx'';
+	IF v_count = 0 THEN return 0; END IF;
 
 	drop index im_trans_price_idx;
 
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0();
 drop function inline_0();
@@ -31,20 +30,19 @@ drop function inline_0();
 
 -- make sure the same price doesn't get defined twice
 create unique index im_trans_price_idx on im_trans_prices (
-        uom_id, company_id, task_type_id, target_language_id,
-        source_language_id, subject_area_id, file_type_id, currency
+	uom_id, company_id, task_type_id, target_language_id,
+	source_language_id, subject_area_id, file_type_id, currency
 );
 
 
+SELECT im_category_new (600, 'MS-Word', 'Intranet Translation File Type');
+update im_categories set aux_string1 = 'doc' where category_id = 600;
 
-insert into im_categories (category_id, category, aux_string1, category_type) values
-(600, 'MS-Word', 'doc', 'Intranet Translation File Type');
+SELECT im_category_new (602, 'MS-Excel', 'Intranet Translation File Type');
+update im_categories set aux_string1 = 'xls' where category_id = 602;
 
-insert into im_categories (category_id, category, aux_string1, category_type) values
-(602, 'MS-Excel', 'xls', 'Intranet Translation File Type');
-
-insert into im_categories (category_id, category, aux_string1, category_type) values
-(604, 'MS-PowerPoint', 'ppt', 'Intranet Translation File Type');
+SELECT im_category_new (604, 'MS-PowerPoint', 'Intranet Translation File Type');
+update im_categories set aux_string1 = 'ppt' where category_id = 604;
 
 
 
@@ -53,7 +51,7 @@ insert into im_categories (category_id, category, aux_string1, category_type) va
 create or replace function im_file_type_from_trans_task (integer)
 returns integer as '
 DECLARE
-        p_task_id	alias for $1;
+	p_task_id	alias for $1;
 	
 	v_task_name	varchar;
 	v_extension	varchar;
@@ -73,7 +71,7 @@ BEGIN
 	where	category_type = ''Intranet Translation File Type''
 		and aux_string1 = v_extension;
 
-        return v_result;
+	return v_result;
 end;' language 'plpgsql';
 
 
@@ -82,7 +80,7 @@ end;' language 'plpgsql';
 
 -- Compatibility with previous version
 create or replace function im_trans_prices_calc_relevancy ( 
-       integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
+	integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
 ) returns numeric as '
 DECLARE
 	v_price_company_id		alias for $1;		
@@ -115,7 +113,7 @@ end;' language 'plpgsql';
 
 -- New procedure with added filetype
 create or replace function im_trans_prices_calc_relevancy ( 
-       integer, integer, integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
+	integer, integer, integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
 ) returns numeric as '
 DECLARE
 	v_price_company_id		alias for $1;		
@@ -240,5 +238,15 @@ BEGIN
 
 	return match_value;
 end;' language 'plpgsql';
+
+
+-- upgrade-3.2.10.0.0-3.2.11.0.0.sql
+
+
+alter table im_trans_prices add
+	min_price		numeric(12,4)
+;
+
+
 
 
