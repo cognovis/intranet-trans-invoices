@@ -1,11 +1,47 @@
 -- upgrade-3.2.9.0.0-3.3.0.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
 
-alter table im_trans_prices
-add file_type_id		integer
-				constraint im_trans_prices_file_type_fk
-				references im_categories
-;
+
+
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+	v_count		integer;
+BEGIN
+	select	count(*) into v_count from user_tab_columns
+	where	lower(table_name) = ''im_trans_prices'' and lower(column_name) = ''file_type_id'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_trans_prices add file_type_id integer
+	constraint im_trans_prices_file_type_fk	references im_categories;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+	v_count		integer;
+BEGIN
+	select	count(*) into v_count from user_tab_columns
+	where	lower(table_name) = ''im_trans_prices'' and lower(column_name) = ''min_price'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_trans_prices add min_price numeric(12,4);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
 
 -- Create a new index to incorporate file_type
 
@@ -57,16 +93,14 @@ DECLARE
 	v_extension	varchar;
 	v_result	integer;
 BEGIN
-	select	task_filename
-	into	v_task_name 
+	select	task_filename into v_task_name 
 	from	im_trans_tasks
 	where	task_id = p_task_id;
 
 	v_extension := lower(substring(v_task_name from length(v_task_name)-2));
 	-- RAISE NOTICE ''%'', v_extension;
 
-	select	min(category_id)
-	into	v_result
+	select	min(category_id) into v_result
 	from	im_categories
 	where	category_type = ''Intranet Translation File Type''
 		and aux_string1 = v_extension;
@@ -238,15 +272,5 @@ BEGIN
 
 	return match_value;
 end;' language 'plpgsql';
-
-
--- upgrade-3.2.10.0.0-3.2.11.0.0.sql
-
-
-alter table im_trans_prices add
-	min_price		numeric(12,4)
-;
-
-
 
 
