@@ -54,14 +54,15 @@ foreach task_id $in_clause_list {
       <td class=rowodd>@payment_term_select;noquote@</td>
       <input type=hidden name=payment_days value=@payment_days@>
         </tr>
-<if @cost_type_id@ eq @cost_type_invoice_id@>
+      <if @cost_type_id@ eq @cost_type_invoice_id@>
         <tr> 
           <td class=rowodd><%= [_ intranet-trans-invoices.Payment_Method] %></td>
           <td class=rowodd><%= [im_invoice_payment_method_select payment_method_id $default_payment_method_id] %></td>
         </tr>
-</if>
-
-
+      </if>
+      <else>
+        <input type=hidden name=payment_method_id value='@default_payment_method_id@'>
+     </else>
         <tr> 
           <td class=roweven><%= [_ intranet-trans-invoices.Invoice_template] %>:</td>
           <td class=roweven><%= [im_cost_template_select template_id $default_invoice_template_id] %></td>
