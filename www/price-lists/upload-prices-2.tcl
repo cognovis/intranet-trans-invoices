@@ -156,7 +156,9 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     }
 
 
-    set subject_area_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Subject Area' and lower(category) = lower(trim(:subject_area))"  -default ""]
+    if {[catch {set subject_area_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Subject Area' and lower(category) = lower(trim(:subject_area))"  -default ""]}]} {
+       append errmsg "<li>Problem with Subject Area '$subject_area'\n" 
+    }     
     if {$subject_area_id == "" && $subject_area != ""} { 
         append errmsg "<li>Didn't find Subject Area '$subject_area'\n" 
     }
