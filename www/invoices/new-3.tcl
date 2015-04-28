@@ -669,7 +669,6 @@ db_foreach task_sum_query $task_sum_sql {
     db_foreach references_prices $reference_price_sql {
 	
         	ns_log Debug "new-3: company_id=$company_id, uom_id=$uom_id => price=$price_formatted, relevancy=$price_relevancy"
-            ds_comment "new-3: company_id=$company_id, uom_id=$uom_id => price=$price_formatted, relevancy=$price_relevancy"
         
         	# Take the first line of the result list (=best score) as a price proposal:
         	if {$price_list_ctr == 1} {
@@ -714,6 +713,8 @@ db_foreach task_sum_query $task_sum_sql {
         if {$rebate >0} {
             set task_sum $task_100
         }
+    } else {
+        set rebate 0
     }
     
     # Minimum Price Logic
